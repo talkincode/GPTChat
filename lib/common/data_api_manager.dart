@@ -9,7 +9,7 @@ class DataApiManager {
   late String _baseUrl;
 
   factory DataApiManager({String? baseUrl}) {
-    _instance._baseUrl = baseUrl ?? 'https://laotsms.toughstruct.net';
+    _instance._baseUrl = baseUrl ?? '';
     return _instance;
   }
 
