@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:laotchat/common/appcontext.dart';
+import 'package:gptchat/common/appcontext.dart';
 import 'package:share_plus/share_plus.dart';
 
 enum ChatMessageType { sent, received }
@@ -52,7 +52,7 @@ class _ChatMessageWidgetState extends State<ChatMessageWidget> with AutomaticKee
               const Padding(
                 padding: EdgeInsets.all(20.0),
                 child: CircleAvatar(
-                  backgroundImage: AssetImage('assets/images/laotchat_avatar.png'),
+                  backgroundImage: AssetImage('assets/images/gptchat_avatar.png'),
                 ),
               ),
             if (widget.message.type == ChatMessageType.sent)

@@ -1,9 +1,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:laotchat/common/appcontext.dart';
-import 'package:laotchat/chat_screen.dart';
-import 'package:laotchat/common/smsapi.dart';
+import 'package:gptchat/common/appcontext.dart';
+import 'package:gptchat/chat_screen.dart';
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -31,7 +30,7 @@ void main() {
   };
   AppContext.getAccountData().then((user){
      if(user.apikey != null && user.apikey!.isNotEmpty && (user.token == null || user.token!.isEmpty)){
-       SmsApi.doLogin(user.apikey!);
+       AppContext.doLogin(user.apikey!);
      }
   });
   runApp(const MaterialApp(home: MyApp()));
@@ -48,7 +47,7 @@ class MyApp extends StatelessWidget {
       title: 'ChatGPT',
       theme: ThemeData(
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.black,
+          backgroundColor: Color(0xFF202123),
           foregroundColor: Colors.white,
           systemOverlayStyle: SystemUiOverlayStyle.light,
           iconTheme: IconThemeData(color: Colors.white),
@@ -56,7 +55,7 @@ class MyApp extends StatelessWidget {
           elevation: 3.0,
         ),
         colorScheme: const ColorScheme.light(
-          primary: Colors.black,
+          primary: Color(0xFF202123),
           secondary: Colors.grey,
           // brightness: Brightness.light,
         ),
@@ -66,7 +65,7 @@ class MyApp extends StatelessWidget {
           bodyLarge: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
         ),
         useMaterial3: true,
-        primaryColor: Colors.black,
+        primaryColor: const Color(0xFF202123),
         primarySwatch: Colors.grey,
         visualDensity: VisualDensity.adaptivePlatformDensity,
         // brightness: Brightness.dark,

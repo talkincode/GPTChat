@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
 
-import 'package:laotchat/common/appcontext.dart';
+import 'package:gptchat/common/appcontext.dart';
 
 class MyEventSource {
   final Uri uri;
@@ -34,10 +34,6 @@ class MyEventSource {
         ..setRequestHeader("Authorization", "Bearer $token")
         ..send(payloadJson);  // Keep this line here.
 
-      // Remove the following onLoadStart event handler.
-      //_request.onLoadStart.listen((_) {
-      //  _request.send(payloadJson);
-      //});
 
       _request.onReadyStateChange.listen((_) {
         if (_request.readyState == HttpRequest.DONE) {

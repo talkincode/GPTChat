@@ -1,4 +1,4 @@
-# laotchat
+# gptchat
 
 A new Flutter project.
 

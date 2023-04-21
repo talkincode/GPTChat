@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:laotchat/common/appcontext.dart';
-import 'package:laotchat/common/models.dart';
-import 'package:laotchat/common/smsapi.dart';
-import 'package:laotchat/widgets/info_item.dart';
+import 'package:gptchat/common/appcontext.dart';
+import 'package:gptchat/common/models.dart';
+import 'package:gptchat/widgets/info_item.dart';
 
 void showUsage(BuildContext context) {
   final formKey = GlobalKey<FormState>();
@@ -10,18 +9,19 @@ void showUsage(BuildContext context) {
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: const Text('使用详情', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+        title: const Text('使用详情', style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
         contentPadding: const EdgeInsets.all(16.0),
         content: SizedBox(
           width: AppContext.isMobile() || AppContext.isWebMobile(context) ? 340 : 480,
-          height: 240,
+          height: 270,
           child: Form(
             key: formKey,
             child: SingleChildScrollView(
               child: Column(
                 children: [
+                  const Text("确认设置好您的的 API key，这里将显示您的 APiKey 的使用详情"),
                   FutureBuilder<SubsUsageResult>(
-                    future: SmsApi.getSubsUsage(),
+                    future: AppContext.getSubsUsage(),
                     builder: (BuildContext context, AsyncSnapshot<SubsUsageResult> snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -62,7 +62,7 @@ void showUsage(BuildContext context) {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('关闭', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+            child: const Text('关闭', style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
           ),
         ],
       );

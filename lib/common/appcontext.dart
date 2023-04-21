@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:gptchat/common/models.dart';
 import 'package:motion_toast/motion_toast.dart';
 import 'package:motion_toast/resources/arrays.dart';
-import 'package:laotchat/common/data_api_manager.dart';
-import 'package:laotchat/common/platform_specific.dart';
+import 'package:gptchat/common/data_api_manager.dart';
+import 'package:gptchat/common/platform_specific.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:crypto/crypto.dart';
@@ -43,30 +45,17 @@ class AccountData {
 /// 全局上下文
 /// /////////////////////////////////////////////////////////////////////////////
 class AppContext {
-  // static String apiSite = "http://127.0.0.1:21979";
-
-  static String apporg = "com.peaiot.laotchat";
-  static String appid = "wxc70d5f7780ff4ec3";
+  static String apporg = "com.peaiot.gptchat";
   static String version = "V1.0.0";
 
-  static String smsapi = "https://sms.pealabs.cn";
-  // static String gptapi = "https://api.teamsgpt.cn";
-  // static String smsapi = "https://teamsgpt.toughradius.net";
-  // static String gptapi = "https://teamsgpt-api.toughradius.net";
+  static String smsapi = "https://api.chatgpt.link365.com.cn:19780";
+  static String gptapi = "https://api.chatgpt.link365.com.cn:17980";
+
   // static String smsapi = "http://127.0.0.1:8000";
-  static String gptapi = "http://127.0.0.1:17980";
-  static String cutimgargs = "?imageMogr2/thumbnail/200x/rradius/7/format/webp/interlace/1/quality/100";
+  // static String gptapi = "http://127.0.0.1:17980";
 
   static final DataApiManager dbManager = DataApiManager(baseUrl: smsapi);
-
-  static const String chatBot = "chatbot";
-  static const String imgenBot = "imgenBot";
-
   static const String chatEvent = "EventChat";
-  static const String writerEvent = "EventWriter";
-  static const String copywriterEvent = "EventCopyWriter";
-  static const String imgenEvent = "EventImgen";
-
   static const String noLogin = "NotLogin";
   static const String noSubs = "NotSubs";
 
@@ -75,15 +64,15 @@ class AppContext {
   /// /////////////////////////////////////////////////////////////////////////////
   static saveUser(AccountData udata) async {
     var prefs = await SharedPreferences.getInstance();
-    prefs.setString("laotchat_userdata_apikey", udata.apikey ?? "");
-    prefs.setString("laotchat_userdata_username", udata.username ?? "");
-    prefs.setString("laotchat_userdata_token", udata.token ?? "");
-    prefs.setString("laotchat_userdata_level", udata.level ?? "user");
-    prefs.setString("laotchat_userdata_nickname", udata.nickname ?? "");
-    prefs.setString("laotchat_userdata_mobile", udata.mobile ?? "");
-    prefs.setString("laotchat_userdata_email", udata.email ?? "");
-    prefs.setString("laotchat_userdata_rearname", udata.rearname ?? "");
-    prefs.setInt("laotchat_expire", udata.expire ?? 0);
+    prefs.setString("gptchat_userdata_apikey", udata.apikey ?? "");
+    prefs.setString("gptchat_userdata_username", udata.username ?? "");
+    prefs.setString("gptchat_userdata_token", udata.token ?? "");
+    prefs.setString("gptchat_userdata_level", udata.level ?? "user");
+    prefs.setString("gptchat_userdata_nickname", udata.nickname ?? "");
+    prefs.setString("gptchat_userdata_mobile", udata.mobile ?? "");
+    prefs.setString("gptchat_userdata_email", udata.email ?? "");
+    prefs.setString("gptchat_userdata_rearname", udata.rearname ?? "");
+    prefs.setInt("gptchat_expire", udata.expire ?? 0);
   }
 
   /// /////////////////////////////////////////////////////////////////////////////
@@ -91,61 +80,62 @@ class AppContext {
   /// /////////////////////////////////////////////////////////////////////////////
   static clearAccountata() async {
     var prefs = await SharedPreferences.getInstance();
-    // prefs.setString("laotchat_userdata_username", "");
-    prefs.setString("laotchat_userdata_token", "");
-    prefs.setString("laotchat_userdata_nickname", "");
-    prefs.setString("laotchat_userdata_level", "");
-    prefs.setString("laotchat_userdata_mobile", "");
-    prefs.setString("laotchat_userdata_email", "");
-    prefs.setString("laotchat_userdata_rearname", "");
-    prefs.setInt("laotchat_expire", 0);
+    prefs.setString("gptchat_userdata_username", "");
+    prefs.setString("gptchat_userdata_apikey", "");
+    prefs.setString("gptchat_userdata_token", "");
+    prefs.setString("gptchat_userdata_nickname", "");
+    prefs.setString("gptchat_userdata_level", "");
+    prefs.setString("gptchat_userdata_mobile", "");
+    prefs.setString("gptchat_userdata_email", "");
+    prefs.setString("gptchat_userdata_rearname", "");
+    prefs.setInt("gptchat_expire", 0);
   }
 
   // 获取用户token
   static Future<String> getUserToken() async {
     var prefs = await SharedPreferences.getInstance();
-    var token = prefs.getString("laotchat_userdata_token") ?? "";
+    var token = prefs.getString("gptchat_userdata_token") ?? "";
     return token;
   }
 
   // 获取用户名
   static Future<String> getUsername() async {
     var prefs = await SharedPreferences.getInstance();
-    var username = prefs.getString("laotchat_userdata_username") ?? "";
+    var username = prefs.getString("gptchat_userdata_username") ?? "";
     return username;
   }
 
   static Future<String> getApikey() async {
     var prefs = await SharedPreferences.getInstance();
-    var username = prefs.getString("laotchat_userdata_username") ?? "";
+    var username = prefs.getString("gptchat_userdata_username") ?? "";
     return username;
   }
 
   // 获取用户昵称
   static Future<String> getNickname() async {
     var prefs = await SharedPreferences.getInstance();
-    var nickname = prefs.getString("laotchat_userdata_nickname") ?? "";
+    var nickname = prefs.getString("gptchat_userdata_nickname") ?? "";
     return nickname;
   }
 
   static Future<String> getUserLevel() async {
     var prefs = await SharedPreferences.getInstance();
-    var token = prefs.getString("laotchat_userdata_level") ?? "user";
+    var token = prefs.getString("gptchat_userdata_level") ?? "user";
     return token;
   }
 
   // 获取用户信息
   static Future<AccountData> getAccountData() async {
     var prefs = await SharedPreferences.getInstance();
-    var apikey = prefs.getString("laotchat_userdata_apikey") ?? "";
-    var username = prefs.getString("laotchat_userdata_username") ?? "";
-    var nickname = prefs.getString("laotchat_userdata_nickname") ?? "";
-    var mobile = prefs.getString("laotchat_userdata_mobile") ?? "";
-    var level = prefs.getString("laotchat_userdata_level") ?? "user";
-    var email = prefs.getString("laotchat_userdata_email") ?? "";
-    var rearname = prefs.getString("laotchat_userdata_rearname") ?? "";
-    var token = prefs.getString("laotchat_userdata_token") ?? "";
-    var expire = prefs.getInt("laotchat_expire") ?? 0;
+    var apikey = prefs.getString("gptchat_userdata_apikey") ?? "";
+    var username = prefs.getString("gptchat_userdata_username") ?? "";
+    var nickname = prefs.getString("gptchat_userdata_nickname") ?? "";
+    var mobile = prefs.getString("gptchat_userdata_mobile") ?? "";
+    var level = prefs.getString("gptchat_userdata_level") ?? "user";
+    var email = prefs.getString("gptchat_userdata_email") ?? "";
+    var rearname = prefs.getString("gptchat_userdata_rearname") ?? "";
+    var token = prefs.getString("gptchat_userdata_token") ?? "";
+    var expire = prefs.getInt("gptchat_expire") ?? 0;
     return AccountData(
       apikey: apikey,
       username: username,
@@ -162,10 +152,10 @@ class AppContext {
   // 获取一个虚拟客户端ID
   static Future<String> getVClientId() async {
     var prefs = await SharedPreferences.getInstance();
-    var vid = prefs.getString("laotchat_client_id") ?? "";
+    var vid = prefs.getString("gptchat_client_id") ?? "";
     if (vid == "") {
       vid = newUUID();
-      prefs.setString("laotchat_client_id", vid);
+      prefs.setString("gptchat_client_id", vid);
     }
     return vid;
   }
@@ -293,27 +283,55 @@ class AppContext {
     return result;
   }
 
-  static Color getRandomMaterialColor({double opacity = 1.0}) {
-    final random = Random();
-    return Colors.primaries[random.nextInt(Colors.primaries.length)].withOpacity(opacity);
+  static Future<AuthResult> doLogin(String apikey) async {
+    if (apikey == "") {
+      return AuthResult(code: 1, msg: "APIKey 不能为空", data: null);
+    }
+    try {
+      var url = '$smsapi/api/app/apikey/auth';
+      var response = await Dio().post(url, data: {'apikey': apikey});
+      if (response.statusCode == 200) {
+        AuthResult result = AuthResult.fromJson(response.data);
+        if (result.code > 0) {
+          return result;
+        }
+        var userdata = result.data!;
+        saveUser(AccountData(
+          apikey: apikey,
+          username: userdata.username!,
+          nickname: userdata.nickname!,
+          mobile: userdata.mobile!,
+          email: userdata.email!,
+          token: userdata.token!,
+          level: userdata.level!,
+          expire: userdata.expire!,
+        ));
+        return result;
+      } else {
+        return AuthResult(code: 1, msg: "认证失败", data: null);
+      }
+    } catch (e) {
+      return AuthResult(code: 1, msg: "认证异常 ${e.toString()}", data: null);
+    }
   }
 
-  static Color getServicePlanMaterialColor({double opacity = 1.0, billtype = "free"}) {
-    if (billtype == "free") {
-      return Colors.green.withOpacity(opacity);
+  /// Get the subscription usage details.
+  /// 获取订阅使用详情
+  static Future<SubsUsageResult> getSubsUsage() async {
+    try {
+      var url = '$smsapi/api/subscription/usage';
+      // 发送请求并获取响应
+      var opts = Options(headers: {"Authorization": "Bearer ${await getUserToken()}"});
+      var response = await Dio().get(url, options: opts);
+      // 检查状态码是否为 200
+      if (response.statusCode == 200) {
+        SubsUsageResult result = SubsUsageResult.fromJson(response.data);
+        return result;
+      } else {
+        return SubsUsageResult(code: 1, msg: "获取订阅使用详情失败", data: null);
+      }
+    } catch (e) {
+      return SubsUsageResult(code: 1, msg: "获取订阅使用详情失败: ${e.toString()}", data: null);
     }
-    if (billtype == "day") {
-      return Colors.cyan.withOpacity(opacity);
-    }
-    if (billtype == "month") {
-      return Colors.blue.withOpacity(opacity);
-    }
-    if (billtype == "year") {
-      return Colors.red.withOpacity(opacity);
-    }
-    if (billtype == "respack") {
-      return Colors.orange.withOpacity(opacity);
-    }
-    return Colors.indigo.withOpacity(opacity);
   }
 }

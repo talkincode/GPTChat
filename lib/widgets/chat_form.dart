@@ -1,58 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:laotchat/common/appcontext.dart';
+import 'package:gptchat/common/appcontext.dart';
 
 class ChatInputForm extends StatelessWidget {
   final Function onChatInput;
   final Function onCancel;
   final Function onRegenerate;
   final bool isReplying;
+  final FocusNode _focusNode = FocusNode();
+  final TextEditingController inputController = TextEditingController();
 
   ChatInputForm(
       {Key? key,
       required this.onChatInput,
       required this.isReplying,
       required this.onCancel,
-      required this.onRegenerate,
-      required this.inputController})
+      required this.onRegenerate})
       : super(key: key);
 
-  final TextEditingController inputController;
-  bool _ctrlKeyPressed = false;
-  bool _shiftKeyPressed = false;
 
-  void _handleKeyPress(RawKeyEvent event) {
-    if (event.runtimeType == RawKeyDownEvent) {
-      if (event.logicalKey == LogicalKeyboardKey.controlLeft || event.logicalKey == LogicalKeyboardKey.controlRight) {
-        _ctrlKeyPressed = true;
-      } else if (event.logicalKey == LogicalKeyboardKey.shiftLeft ||
-          event.logicalKey == LogicalKeyboardKey.shiftRight) {
-        _shiftKeyPressed = true;
-      } else if ((_ctrlKeyPressed || _shiftKeyPressed) && event.logicalKey == LogicalKeyboardKey.enter) {
-        // 当按下 ctrl 或 shift + enter 时换行
-        final currentText = inputController.text;
-        inputController.text = '$currentText\n';
-        inputController.selection = TextSelection.fromPosition(TextPosition(offset: inputController.text.length));
-      } else if (event.logicalKey == LogicalKeyboardKey.enter) {
-        // 当按下 enter 时直接提交
-        if (!_ctrlKeyPressed && !_shiftKeyPressed && inputController.text.isNotEmpty) {
-          onChatInput(inputController.text);
-          inputController.clear();
-        }
-      }
-    } else if (event.runtimeType == RawKeyUpEvent) {
-      if (event.logicalKey == LogicalKeyboardKey.controlLeft || event.logicalKey == LogicalKeyboardKey.controlRight) {
-        _ctrlKeyPressed = false;
-      } else if (event.logicalKey == LogicalKeyboardKey.shiftLeft ||
-          event.logicalKey == LogicalKeyboardKey.shiftRight) {
-        _shiftKeyPressed = false;
-      }
-    }
+  bool _isControlOrShiftKeyPressed(RawKeyEvent event) {
+    return event.isControlPressed || event.isShiftPressed;
   }
 
   @override
   Widget build(BuildContext context) {
-    String inputHint = AppContext.isDesktop() || AppContext.isBigWindows(context) ? '输入你的问题 Enter 快速提交' : '输入你的问题';
+    String inputHint = '输入你的问题';
     return Column(
       children: [
         if (isReplying)
@@ -104,20 +77,37 @@ class ChatInputForm extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5),
                     // height: AppContext.isDesktop() ? 210 : 120,
-                    child: RawKeyboardListener(
-                      focusNode: FocusNode(),
-                      autofocus: true,
-                      onKey: _handleKeyPress,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(
-                          maxHeight: 300,
-                          minHeight: 50,
-                        ),
-                        child: SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxHeight: 300,
+                        minHeight: 50,
+                      ),
+                      child: SingleChildScrollView(
+                        child: RawKeyboardListener(
+                          focusNode: _focusNode,
+                          onKey: (RawKeyEvent event) {
+                            if (event.runtimeType == RawKeyDownEvent &&
+                                event.logicalKey == LogicalKeyboardKey.enter &&
+                                _isControlOrShiftKeyPressed(event)) {
+                              // Insert a new line when Ctrl or Shift is pressed along with Enter
+                              inputController.value = inputController.value.copyWith(
+                                text: inputController.text + '\n',
+                                selection: TextSelection.collapsed(offset: inputController.text.length + 1),
+                                composing: TextRange.empty,
+                              );
+                            } else if (event.runtimeType == RawKeyDownEvent &&
+                                event.logicalKey == LogicalKeyboardKey.enter &&
+                                !_isControlOrShiftKeyPressed(event)) {
+                              // Submit the text when Enter is pressed without Ctrl or Shift
+                              onChatInput(inputController.text);
+                              inputController.clear();
+                            }
+                          },
                           child: TextField(
                             controller: inputController,
                             maxLines: null,
                             enabled: !isReplying,
+                            keyboardType: TextInputType.multiline,
                             decoration: InputDecoration(
                               hintText: inputHint,
                               // contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
@@ -162,7 +152,7 @@ class ChatInputForm extends StatelessWidget {
           child: Opacity(
             opacity: 0.5,
             child: Text(" ChatGPT may produce inaccurate information about people, places, or facts.",
-            style: TextStyle(fontSize: 14)),
+                style: TextStyle(fontSize: 14)),
           ),
         )
       ],

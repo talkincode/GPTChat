@@ -1,16 +1,17 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:laotchat/common/appcontext.dart';
-import 'package:laotchat/common/models.dart';
-import 'package:laotchat/widgets/apiauth.dart';
-import 'package:laotchat/widgets/usage.dart';
+import 'package:gptchat/common/appcontext.dart';
+import 'package:gptchat/common/models.dart';
+import 'package:gptchat/widgets/apiauth.dart';
+import 'package:gptchat/widgets/usage.dart';
 
 class ChatSidebar extends StatefulWidget {
   List<Conversation> conversations;
   String conversation;
   final Function(String) onChanged;
   final Function() onConversationRemovePressed;
+  final Function() onLogout;
 
   ChatSidebar({
     Key? key,
@@ -18,6 +19,7 @@ class ChatSidebar extends StatefulWidget {
     required this.conversation,
     required this.onChanged,
     required this.onConversationRemovePressed,
+    required this.onLogout,
   }) : super(key: key);
 
   @override
@@ -34,25 +36,30 @@ class _ChatSidebarState extends State<ChatSidebar> {
         // borderRadius: BorderRadius.circular(10.0),
       ),
       child: Column(children: [
-        TextButton(
-            style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20)),
-            onPressed: () {
-              var newchatid = AppContext.newUUID();
-              var conv = Conversation(conversation: newchatid, name: '新对话', roleid: "default");
-              AppContext.dbManager.createConversation(conv);
-              widget.conversations.add(conv);
-              widget.onChanged(newchatid);
-            },
-            child: Row(children: const [
-              Icon(
-                size: 18,
-                Icons.add,
-                color: Colors.white70,
-              ),
-              SizedBox(width: 5),
-              Text('New chat', style: TextStyle(fontSize: 18, color: Colors.white)),
-            ])),
-        const Divider(color: Colors.white38, thickness: 1),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Theme.of(context).colorScheme.secondary.withOpacity(0.35), width: 1),
+            borderRadius: BorderRadius.circular(9),
+          ),
+          child: TextButton(
+              style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 18)),
+              onPressed: () {
+                var newchatid = AppContext.newUUID();
+                var conv = Conversation(conversation: newchatid, name: '新对话', roleid: "default");
+                AppContext.dbManager.createConversation(conv);
+                widget.conversations.add(conv);
+                widget.onChanged(newchatid);
+              },
+              child: Row(children: const [
+                Icon(
+                  size: 18,
+                  Icons.add,
+                  color: Colors.white70,
+                ),
+                SizedBox(width: 5),
+                Text('New chat', style: TextStyle(fontSize: 18, color: Colors.white)),
+              ])),
+        ),
         const SizedBox(width: 5),
         Expanded(
           child: Container(
@@ -73,17 +80,17 @@ class _ChatSidebarState extends State<ChatSidebar> {
                   child: Row(children: [
                     Expanded(
                         child: Tooltip(
-                          message: item.name,
-                          child: Text(AppContext.subString(item.name, 20),
-                              style: const TextStyle(fontSize: 16, color: Colors.white70)),
-                        )),
+                      message: item.name,
+                      child: Text(AppContext.subString(item.name, 20),
+                          style: const TextStyle(fontSize: 16, color: Colors.white70)),
+                    )),
                     const SizedBox(width: 5),
                     SizedBox(
                       width: 30,
                       child: IconButton(
                           splashRadius: 20,
                           onPressed: () {
-                            showConversationEditForm(context, item.conversation, item.name, (newv){
+                            showConversationEditForm(context, item.conversation, item.name, (newv) {
                               setState(() {
                                 item.name = newv;
                               });
@@ -98,7 +105,7 @@ class _ChatSidebarState extends State<ChatSidebar> {
                     SizedBox(
                       width: 30,
                       child: IconButton(
-                        splashRadius: 20,
+                          splashRadius: 20,
                           onPressed: () {
                             widget.onConversationRemovePressed();
                           },
@@ -145,7 +152,7 @@ class _ChatSidebarState extends State<ChatSidebar> {
         TextButton(
             style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20)),
             onPressed: () {
-              widget.onConversationRemovePressed();
+              widget.onLogout();
             },
             child: Row(children: const [
               Icon(
@@ -161,9 +168,6 @@ class _ChatSidebarState extends State<ChatSidebar> {
   }
 }
 
-
-
-
 void showConversationEditForm(BuildContext context, String cid, String title, Function(String) callback) {
   final formKey = GlobalKey<FormState>();
   String _title = title;
@@ -171,7 +175,7 @@ void showConversationEditForm(BuildContext context, String cid, String title, Fu
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: const Text('修改对话标题', style:  TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+        title: const Text('修改对话标题', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
         contentPadding: const EdgeInsets.all(16.0),
         content: SizedBox(
           width: AppContext.isMobile() || AppContext.isWebMobile(context) ? 340 : 480,
@@ -200,7 +204,7 @@ void showConversationEditForm(BuildContext context, String cid, String title, Fu
             child: const Text('取消', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
           ),
           TextButton(
-             style: TextButton.styleFrom(padding: const EdgeInsets.all(15)),
+            style: TextButton.styleFrom(padding: const EdgeInsets.all(15)),
             onPressed: () {
               if (formKey.currentState!.validate()) {
                 AppContext.dbManager.updateConversation(cid, _title);

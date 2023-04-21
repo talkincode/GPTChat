@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:laotchat/common/appcontext.dart';
-import 'package:laotchat/common/historys.dart';
-import 'package:laotchat/common/sse.dart';
-import 'package:laotchat/common/models.dart';
-import 'package:laotchat/widgets/chat_form.dart';
-import 'package:laotchat/widgets/chat_sidebar.dart';
-import 'package:laotchat/widgets/chat_widget.dart';
+import 'package:gptchat/common/appcontext.dart';
+import 'package:gptchat/common/historys.dart';
+import 'package:gptchat/common/websse.dart';
+import 'package:gptchat/common/models.dart';
+import 'package:gptchat/widgets/chat_form.dart';
+import 'package:gptchat/widgets/chat_sidebar.dart';
+import 'package:gptchat/widgets/chat_widget.dart';
 
 class ChatScreen extends StatefulWidget {
   ChatScreen({Key? key}) : super(key: key);
@@ -22,8 +22,6 @@ class _ChatScreenState extends State<ChatScreen> {
   String lastInput = "";
 
   MyEventSource? eventSource;
-
-  final TextEditingController inputController = TextEditingController();
 
   _ChatScreenState();
 
@@ -255,15 +253,26 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: [
                   Expanded(
                     child: ChatSidebar(
-                      conversations: conversations,
-                      conversation: conversation,
-                      onChanged: (value) {
-                        _onConversationChanged(value);
-                      },
-                      onConversationRemovePressed: () {
-                        _onConversationRemoved();
-                      },
-                    ),
+                        conversations: conversations,
+                        conversation: conversation,
+                        onChanged: (value) {
+                          _onConversationChanged(value);
+                        },
+                        onConversationRemovePressed: () {
+                          _onConversationRemoved();
+                        },
+                        onLogout: () {
+                          AppContext.confrimBox(context, "即将退出并清除客户端信息").then((value) {
+                            if (value) {
+                              AppContext.clearAccountata();
+                              setState(() {
+                                conversations.clear();
+                                messages.clear();
+                                conversation = "";
+                              });
+                            }
+                          });
+                        }),
                   ),
                   const SizedBox(width: 10),
                 ],
@@ -288,7 +297,6 @@ class _ChatScreenState extends State<ChatScreen> {
                       ? const EdgeInsets.symmetric(horizontal: 70, vertical: 20)
                       : const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                   child: ChatInputForm(
-                    inputController: inputController,
                     onChatInput: _onFormInput,
                     onRegenerate: () {
                       if (lastInput != "") {

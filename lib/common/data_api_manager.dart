@@ -17,7 +17,7 @@ class DataApiManager {
 
   static Future<String> getUserToken() async {
     var prefs = await SharedPreferences.getInstance();
-    var token = prefs.getString("laotchat_userdata_token") ?? "";
+    var token = prefs.getString("gptchat_userdata_token") ?? "";
     return token;
   }
 
@@ -25,14 +25,6 @@ class DataApiManager {
     await _dio.post(
       '$_baseUrl/api/history/chat/add',
       data: FormData.fromMap(chatHistory.toJson()),
-      options: Options(headers: {"Authorization": "Bearer ${await getUserToken()}"}),
-    );
-  }
-
-  Future<void> insertImageHistory(ImageHistory imageHistory) async {
-    await _dio.post(
-      '$_baseUrl/api/history/image/add',
-      data: FormData.fromMap(imageHistory.toJson()),
       options: Options(headers: {"Authorization": "Bearer ${await getUserToken()}"}),
     );
   }
@@ -75,37 +67,6 @@ class DataApiManager {
     return null;
   }
 
-  Future<ImageHistory?> getLatestImageHistory(String event) async {
-    final response = await _dio.get(
-      '$_baseUrl/api/history/image/latest',
-      queryParameters: {
-        'event': event,
-      },
-      options: Options(headers: {"Authorization": "Bearer ${await getUserToken()}"}),
-    );
-
-    if (response.data != null) {
-      return ImageHistory.fromJson(response.data);
-    }
-    return null;
-  }
-
-  Future<List<ImageHistory>> getImageHistories(int maxRecords) async {
-    try {
-      final response = await _dio.get(
-        '$_baseUrl/api/history/image/query',
-        queryParameters: {
-          'count': maxRecords,
-        },
-        options: Options(headers: {"Authorization": "Bearer ${await getUserToken()}"}),
-      );
-
-      final List<dynamic> data = response.data;
-      return data.map((json) => ImageHistory.fromJson(json)).toList().reversed.toList();
-    } catch (e) {
-      return [];
-    }
-  }
 
   Future<dynamic> getConversationRole(String roleid) async {
     try {
@@ -119,14 +80,14 @@ class DataApiManager {
       if (response.statusCode != 200 || response.data == null) {
         return {
           "id": "default",
-          "name": "与laotchat对话",
+          "name": "与 ChatGPT 对话",
         };
       }
       return response.data;
     } catch (e) {
       return {
         "id": "default",
-        "name": "与laotchat对话",
+        "name": "与 ChatGPT 对话",
       };
     }
   }
@@ -141,7 +102,6 @@ class DataApiManager {
       if (response.statusCode != 200 || response.data == null) {
         return [];
       }
-
       final List<dynamic> data = response.data;
       return data.map((json) => Conversation.fromJson(json)).toList();
     } catch (e) {
@@ -190,17 +150,6 @@ class DataApiManager {
     return response.statusCode ?? 0;
   }
 
-  Future<int> deleteImageHistory(String id) async {
-    final response = await _dio.delete(
-      '$_baseUrl/api/history/image/delete',
-      queryParameters: {
-        'id': id,
-      },
-      options: Options(headers: {"Authorization": "Bearer ${await getUserToken()}"}),
-    );
-
-    return response.statusCode ?? 0;
-  }
 
   Future<int> deleteChatHistory(String id) async {
     final response = await _dio.delete(
@@ -214,63 +163,6 @@ class DataApiManager {
     return response.statusCode ?? 0;
   }
 
-  Future<void> insertChatSpell(String name, String tags, String content) async {
-    await _dio.post(
-      '$_baseUrl/api/aispell/chat/create',
-      data: FormData.fromMap({
-        'tags': tags,
-        'name': name,
-        'content': content,
-      }),
-      options: Options(headers: {"Authorization": "Bearer ${await getUserToken()}"}),
-    );
-  }
 
-  Future<void> insertWritingSpell(String name, String tags, String style, String perspective, String content) async {
-    await _dio.post(
-      '$_baseUrl/api/aispell/writing/create',
-      data: FormData.fromMap({
-        'name': name,
-        'tags': tags,
-        'style': style,
-        'perspective': perspective,
-        'content': content,
-      }),
-      options: Options(headers: {"Authorization": "Bearer ${await getUserToken()}"}),
-    );
-  }
 
-  Future<void> insertCopyWritingSpell(String name, String tags, String platform, String users, String content) async {
-    await _dio.post(
-      '$_baseUrl/api/aispell/copywriting/create',
-      data: FormData.fromMap({
-        'name': name,
-        'tags': tags,
-        'platform': platform,
-        'users': users,
-        'content': content,
-      }),
-      options: Options(headers: {"Authorization": "Bearer ${await getUserToken()}"}),
-    );
-  }
-
-  Future<void> insertImagineSpell(String id, String name, String tags, String simpleUrl, String content) async {
-    await _dio
-        .post(
-      '$_baseUrl/api/aispell/imagine/create',
-      data: FormData.fromMap({
-        "id": id,
-        'name': name,
-        'tags': tags,
-        'simple_url': simpleUrl,
-        'content': content,
-      }),
-      options: Options(headers: {"Authorization": "Bearer ${await getUserToken()}"}),
-    )
-        .then((value) {
-      print('insertImagineSpell done $value');
-    }).catchError((error) {
-      print('insertImagineSpell error: $error');
-    });
-  }
 }

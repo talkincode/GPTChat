@@ -1,5 +1,5 @@
-import 'package:laotchat/common/appcontext.dart';
-import 'package:laotchat/common/models.dart';
+import 'package:gptchat/common/appcontext.dart';
+import 'package:gptchat/common/models.dart';
 
 typedef OnMessage = void Function(dynamic event);
 typedef OnError = void Function(dynamic event);
@@ -10,9 +10,6 @@ typedef OnClose = void Function();
 /// /////////////////////////////////////////////////////////////////////////////
 class HistoryUtil {
   static final List<ChatCompletionMessage> _chatHistorys = [];
-  static final List<ChatCompletionMessage> _writerHistorys = [];
-  static final List<ChatCompletionMessage> _copywriterHistorys = [];
-  static final List<ImageHistory> _imageHistorys = [];
 
   static void clearChatHistorys() {
     _chatHistorys.clear();
@@ -32,37 +29,6 @@ class HistoryUtil {
     }
   }
 
-  static Future<void> reloadWriterHistorys(int maxRecords) async {
-    var msgs = await AppContext.dbManager.getChatHistories("", AppContext.writerEvent, maxRecords);
-    _writerHistorys.clear();
-    for (var hmsg in msgs) {
-      _writerHistorys.add(ChatCompletionMessage(
-        id: hmsg.id,
-        role: hmsg.role,
-        content: hmsg.content,
-      ));
-    }
-  }
-
-  static Future<void> reloadCopyWriterHistorys(int maxRecords) async {
-    var msgs = await AppContext.dbManager.getChatHistories("", AppContext.copywriterEvent, maxRecords);
-    _copywriterHistorys.clear();
-    for (var hmsg in msgs) {
-      _copywriterHistorys.add(ChatCompletionMessage(
-        id: hmsg.id,
-        role: hmsg.role,
-        content: hmsg.content,
-      ));
-    }
-  }
-
-  static Future<void> reloadImageHistorys(int maxRecords) async {
-    var msgs = await AppContext.dbManager.getImageHistories(maxRecords);
-    _imageHistorys.clear();
-    for (var hmsg in msgs) {
-      _imageHistorys.add(hmsg);
-    }
-  }
 
   static void addChatMessage(ChatCompletionMessage msg) {
     _chatHistorys.add(msg);
@@ -85,18 +51,6 @@ class HistoryUtil {
 
   static List<ChatCompletionMessage> getChatMessages() {
     return _chatHistorys.sublist(0);
-  }
-
-  static List<ChatCompletionMessage> getWriterMessages() {
-    return _writerHistorys.sublist(0);
-  }
-
-  static List<ChatCompletionMessage> getCopyWriterMessages() {
-    return _copywriterHistorys.sublist(0);
-  }
-
-  static List<ImageHistory> getImageMessages() {
-    return _imageHistorys.sublist(0);
   }
 
   /// get latest chat messages
