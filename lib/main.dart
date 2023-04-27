@@ -46,6 +46,7 @@ class MyApp extends StatelessWidget {
       locale: const Locale('zh', 'CN'),
       title: 'ChatGPT',
       theme: ThemeData(
+        fontFamily: "NotoSansSC",
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF202123),
           foregroundColor: Colors.white,
@@ -71,6 +72,7 @@ class MyApp extends StatelessWidget {
         // brightness: Brightness.dark,
       ),
       darkTheme: ThemeData(
+        fontFamily: "NotoSansSC",
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white12,
           foregroundColor: Colors.white70,

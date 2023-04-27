@@ -81,7 +81,6 @@ class _ChatMessageWidgetState extends State<ChatMessageWidget> with AutomaticKee
                             maxLines: null,
                             style: const TextStyle(
                               fontSize: 16,
-                              fontFamily: 'Roboto', // 字体家族
                             ),
                           ),
                         ],

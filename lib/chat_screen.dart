@@ -121,7 +121,9 @@ class _ChatScreenState extends State<ChatScreen> {
       status: "start",
       event: AppContext.chatEvent,
       msgid: AppContext.newUUID(),
-      time: DateTime.now().millisecondsSinceEpoch,
+      time: DateTime
+          .now()
+          .millisecondsSinceEpoch,
     );
     var ccmsg = ChatCompletionMessage(role: "user", content: msg, id: key, conversation: conversation);
     var contextMessages = HistoryUtil.getLatestChatMessages();
@@ -135,7 +137,7 @@ class _ChatScreenState extends State<ChatScreen> {
     var apiurl = "${AppContext.gptapi}/chat/sse";
     eventSource = await MyEventSource.connect(Uri.parse(apiurl), await AppContext.getUserToken(), apiRequest);
     eventSource?.stream.listen(
-        (event) {
+            (event) {
           _onReply(event);
         },
         onError: _onError,
@@ -231,54 +233,61 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  Widget _buildSidebar(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme
+            .of(context)
+            .primaryColor,
+      ),
+      width: 270,
+      child: Column(
+        children: [
+          Expanded(
+            child: ChatSidebar(
+                conversations: conversations,
+                conversation: conversation,
+                onChanged: (value) {
+                  _onConversationChanged(value);
+                },
+                onConversationRemovePressed: () {
+                  _onConversationRemoved();
+                },
+                onLogout: () {
+                  AppContext.confrimBox(context, "即将退出并清除客户端信息").then((value) {
+                    if (value) {
+                      AppContext.clearAccountata();
+                      setState(() {
+                        conversations.clear();
+                        messages.clear();
+                        conversation = "";
+                      });
+                    }
+                  });
+                }),
+          ),
+          const SizedBox(width: 10),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: (AppContext.isBigWindows(context))
           ? null
           : AppBar(
-              title: const Text("ChatGPT"),
-              actions: const [],
-            ),
+        title: const Text("ChatGPT"),
+        actions: const [],
+      ),
+      drawer: MediaQuery
+          .of(context)
+          .size
+          .width < 600 ? Drawer(child: _buildSidebar(context)) : null,
       body: Row(
         children: [
-          Visibility(
-            visible: AppContext.isBigWindows(context),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-              ),
-              width: 270,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: ChatSidebar(
-                        conversations: conversations,
-                        conversation: conversation,
-                        onChanged: (value) {
-                          _onConversationChanged(value);
-                        },
-                        onConversationRemovePressed: () {
-                          _onConversationRemoved();
-                        },
-                        onLogout: () {
-                          AppContext.confrimBox(context, "即将退出并清除客户端信息").then((value) {
-                            if (value) {
-                              AppContext.clearAccountata();
-                              setState(() {
-                                conversations.clear();
-                                messages.clear();
-                                conversation = "";
-                              });
-                            }
-                          });
-                        }),
-                  ),
-                  const SizedBox(width: 10),
-                ],
-              ),
-            ),
-          ),
+          if (MediaQuery.of(context).size.width >= 600) Container(width: 270, child: _buildSidebar(context)),
           Expanded(
             child: Column(
               children: [

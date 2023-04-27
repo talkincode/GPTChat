@@ -103,13 +103,18 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
 
+  fonts:
+    - family: NotoSansSC
+      fonts:
+        - asset: assets/fonts/NotoSansSC-Regular.otf
+
   assets:
     - assets/images/avatar.png
     - assets/images/gptchat_avatar.png
     - assets/images/ren_avatar.png
     - assets/images/avatar01.png
     - assets/images/avatar14.png
-
+    - assets/fonts/NotoSansSC-Regular.otf
 
 flutter_icons:
   image_path: "assets/images/app_icon.png"
